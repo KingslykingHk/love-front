@@ -8,7 +8,7 @@ export default function FunBox({ submissionId }) {
   const sendMessage = async () => {
     try {
       const res = await fetch(
-        "http://localhost:5000/just-for-fun-hurrshini",
+        "https://love-f9y2.onrender.com/just-for-fun-hurrshini",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
