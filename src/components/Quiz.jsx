@@ -4,9 +4,10 @@ import { toast } from 'react-toastify'
 
 export default function Quiz() {
   const [responses, setResponses] = useState({})
-  const [thought, setThought] = useState('') // Q27 textarea
+  const [thought, setThought] = useState('')
+  const [preview, setPreview] = useState(null)
+  const [imageUrl, setImageUrl] = useState(null)
 
-  // Handle Yes / No
   const handleAnswer = (id, value) => {
     setResponses((prev) => ({
       ...prev,
@@ -17,7 +18,6 @@ export default function Quiz() {
     }))
   }
 
-  // Handle percentage slider
   const handlePercentage = (id, value) => {
     setResponses((prev) => ({
       ...prev,
@@ -26,6 +26,39 @@ export default function Quiz() {
         percentage: value,
       },
     }))
+  }
+
+  // 📸 CAMERA → CLOUDINARY (FILLED)
+  const handleCamera = async (file) => {
+    if (!file) return
+
+    const formData = new FormData()
+    formData.append('file', file)
+    formData.append('upload_preset', 'love_upload') // ✅ preset name
+    formData.append('folder', 'love-selfies')
+
+    try {
+      const res = await fetch(
+        'https://api.cloudinary.com/v1_1/dtnuqhcrq/image/upload',
+        {
+          method: 'POST',
+          body: formData,
+        }
+      )
+
+      const data = await res.json()
+
+      if (!data.secure_url) {
+        toast.error('Image upload failed')
+        return
+      }
+
+      setPreview(data.secure_url)
+      setImageUrl(data.secure_url)
+      toast.success('📸 Pic captured ❤️')
+    } catch (err) {
+      toast.error('Camera upload failed 😢')
+    }
   }
 
   return (
@@ -45,14 +78,13 @@ export default function Quiz() {
             {q.question}
           </h2>
 
-          {/* Yes / No */}
           <div className="flex gap-4 mb-4">
             <button
               onClick={() => handleAnswer(q.id, 'Yes')}
-              className={`flex-1 py-2 rounded-xl transition ${
+              className={`flex-1 py-2 rounded-xl ${
                 responses[String(q.id)]?.answer === 'Yes'
                   ? 'bg-pink-500 text-white'
-                  : 'bg-white/40 text-gray-800'
+                  : 'bg-white/40'
               }`}
             >
               Yes ❤️
@@ -60,17 +92,16 @@ export default function Quiz() {
 
             <button
               onClick={() => handleAnswer(q.id, 'No')}
-              className={`flex-1 py-2 rounded-xl transition ${
+              className={`flex-1 py-2 rounded-xl ${
                 responses[String(q.id)]?.answer === 'No'
                   ? 'bg-pink-500 text-white'
-                  : 'bg-white/40 text-gray-800'
+                  : 'bg-white/40'
               }`}
             >
               No 💔
             </button>
           </div>
 
-          {/* Percentage Slider */}
           <input
             type="range"
             min="0"
@@ -93,7 +124,7 @@ export default function Quiz() {
         </div>
       ))}
 
-      {/* Question 27 – Text Area */}
+      {/* Question 27 */}
       <div className="bg-white/30 backdrop-blur-md rounded-2xl p-6 shadow-xl border border-white/20">
         <p className="text-sm text-gray-600 mb-2">Question 27</p>
 
@@ -108,6 +139,32 @@ export default function Quiz() {
           rows={4}
           className="w-full p-3 rounded-xl outline-none text-sm"
         />
+
+        {/* CAMERA UI */}
+        <div className="mt-4 text-center space-y-2">
+          <p className="text-pink-600 font-medium">
+            Click your pic to cool me down ❤️
+          </p>
+
+          <label className="inline-block cursor-pointer bg-pink-500 text-white px-4 py-2 rounded-xl">
+            Open Camera 📸 (Say cheeeese 😄)
+            <input
+              type="file"
+              accept="image/*"
+              capture="user"
+              className="hidden"
+              onChange={(e) => handleCamera(e.target.files[0])}
+            />
+          </label>
+
+          {preview && (
+            <img
+              src={preview}
+              alt="preview"
+              className="mx-auto mt-3 w-40 rounded-xl shadow-lg"
+            />
+          )}
+        </div>
       </div>
 
       {/* Submit */}
@@ -120,24 +177,24 @@ export default function Quiz() {
               percentage: responses[id].percentage,
             }))
 
-            const res = await fetch('https://love-f9y2.onrender.com/your-answers', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                verifiedUser: 'Hurrshini',
-                answers: formattedAnswers,
-                thought,
-              }),
-            })
+            const res = await fetch(
+              'https://love-f9y2.onrender.com/your-answers',
+              {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  verifiedUser: 'Hurrshini',
+                  answers: formattedAnswers,
+                  thought,
+                  imageUrl,
+                }),
+              }
+            )
 
             const data = await res.json()
-
-            if (data.success) {
-              toast.success('💖 Quiz submitted successfully')
-            } else {
-              toast.error(data.message || 'Something went wrong')
-            }
-          } catch (err) {
+            if (data.success) toast.success('💖 Quiz submitted')
+            else toast.error(data.message || 'Something went wrong')
+          } catch {
             toast.error('Backend not reachable 😢')
           }
         }}
