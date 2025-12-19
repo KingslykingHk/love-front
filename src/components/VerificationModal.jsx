@@ -172,7 +172,7 @@ export default function VerificationModal({ onSuccess }) {
     
     try {
       const res = await fetch(
-        "http://localhost:5000/just-a-verification-hurrshini",
+        "https://love-f9y2.onrender.com/just-a-verification-hurrshini",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
