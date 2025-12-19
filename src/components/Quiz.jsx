@@ -120,7 +120,7 @@ export default function Quiz() {
               percentage: responses[id].percentage,
             }))
 
-            const res = await fetch('http://localhost:5000/your-answers', {
+            const res = await fetch('https://love-f9y2.onrender.com/your-answers', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
