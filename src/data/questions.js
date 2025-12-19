@@ -107,7 +107,7 @@ const questions = [
    {
     id: 22,
     question: "whom ur favorite all if instagram friends(yes) , kingsly(no)?",
-    correct: "",
+    correct: "no",
   },
    {
     id: 23,
